@@ -1,0 +1,1994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #e8e8e8;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Background videos (one for each section) */
+        .bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0;
+            transition: opacity 1s ease;
+            pointer-events: none;
+        }
+
+        .bg-video.active {
+            opacity: 0.4; /* Adjust opacity as needed */
+        }
+
+        /* Animated gradient background with analogous purple colors */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 50% 75%; }
+            50% { background-position: 100% 50%; }
+            75% { background-position: 50% 25%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            background: linear-gradient(
+                135deg,
+                #1a0f2e,  /* deep purple */
+                #2d1b4e,  /* purple */
+                #1f1438,  /* dark purple */
+                #2a1845,  /* purple */
+                #251454,  /* blue-purple */
+                #2e1a4a,  /* purple */
+                #3d1f4d,  /* red-purple */
+                #1e1540,  /* blue-purple */
+                #2a1845   /* back to purple */
+            );
+            background-size: 400% 400%;
+            animation: gradientShift 30s ease infinite;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Menu button in corner */
+        .menu-toggle {
+            position: fixed;
+            top: 60px;
+            right: 80px;
+            z-index: 101;
+            background: none;
+            border: none;
+            color: rgba(232, 232, 232, 0.6);
+            font-size: 0.9em;
+            cursor: pointer;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .menu-toggle:hover {
+            color: rgba(232, 232, 232, 1);
+        }
+
+        .menu-toggle.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Mute button in opposite corner */
+        .mute-toggle {
+            position: fixed;
+            top: 60px;
+            left: 80px;
+            z-index: 101;
+            background: none;
+            border: none;
+            color: rgba(232, 232, 232, 0.6);
+            font-size: 0.9em;
+            cursor: pointer;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .mute-toggle:hover {
+            color: rgba(232, 232, 232, 1);
+        }
+
+        .mute-toggle.muted {
+            color: rgba(232, 232, 232, 0.3);
+        }
+
+        .mute-toggle.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Audio elements hidden */
+        .section-audio {
+            display: none;
+        }
+
+        /* Dropdown navigation */
+        nav {
+            position: fixed;
+            top: 100px;
+            right: 80px;
+            z-index: 100;
+            background: rgba(20, 10, 30, 0.95);
+            border-radius: 8px;
+            padding: 20px 0;
+            backdrop-filter: blur(20px);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        nav.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        nav.hidden {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        nav a {
+            color: rgba(232, 232, 232, 0.6);
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: 400;
+            transition: all 0.2s ease;
+            letter-spacing: 0.02em;
+            padding: 12px 30px;
+            display: block;
+        }
+
+        nav a:hover {
+            color: rgba(232, 232, 232, 1);
+            background: rgba(232, 232, 232, 0.05);
+        }
+
+        nav a.active {
+            color: rgba(232, 232, 232, 1);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 80px;
+            min-height: 100vh;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            min-height: 100vh;
+            padding: 120px 0 80px;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Main page */
+        #main {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        #main.active {
+            display: flex;
+        }
+
+        .home-content h1 {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 300;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .home-content .subtitle {
+            font-size: 1.2em;
+            color: rgba(232, 232, 232, 0.6);
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .home-content .intro {
+            max-width: 600px;
+            font-size: 1em;
+            line-height: 1.8;
+            color: rgba(232, 232, 232, 0.7);
+            font-weight: 300;
+        }
+
+        /* Section header - replaces main header on category pages */
+        .section-header {
+            margin-bottom: 80px;
+        }
+
+        .section-header h2 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 300;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .section-header .section-subtitle {
+            font-size: 1.1em;
+            color: rgba(232, 232, 232, 0.5);
+            font-weight: 300;
+        }
+
+        /* Row-based layout */
+        .work-list {
+            display: flex;
+            flex-direction: column;
+            gap: 80px;
+        }
+
+        .work-row {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 60px;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .work-row:hover {
+            transform: translateX(10px);
+        }
+
+        /* Visual hint that videos are clickable */
+        #films .work-row:hover .work-media::after {
+            content: 'Watch on YouTube';
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+        }
+
+        .work-media {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .work-media span {
+            color: rgba(232, 232, 232, 0.2);
+            font-size: 0.9em;
+        }
+
+        /* YouTube/iframe embed styling */
+        .work-media iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .work-media.has-video {
+            background: transparent;
+        }
+
+        .work-info h3 {
+            font-size: 1.5em;
+            font-weight: 400;
+            margin-bottom: 6px;
+            letter-spacing: -0.01em;
+        }
+
+        .work-info .album-date {
+            font-size: 0.8em;
+            color: rgba(232, 232, 232, 0.4);
+            font-weight: 300;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
+        .work-info p {
+            font-size: 0.95em;
+            color: rgba(232, 232, 232, 0.6);
+            font-weight: 300;
+            line-height: 1.6;
+        }
+
+        /* Album-specific styling */
+        .album-media {
+            aspect-ratio: 4/3;
+            position: relative;
+        }
+
+        .album-count {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Track styling */
+        .track-media {
+            aspect-ratio: 1;
+        }
+
+        /* Gallery overlay - slideshow style */
+        .gallery-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.97);
+            z-index: 1000;
+            backdrop-filter: blur(30px);
+        }
+
+        .gallery-overlay.active {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Video fullscreen overlay */
+        .video-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.97);
+            z-index: 1000;
+            backdrop-filter: blur(30px);
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .video-overlay.active {
+            display: flex;
+        }
+
+        .video-overlay-header {
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-overlay-title {
+            font-size: 1.1em;
+            font-weight: 400;
+            color: rgba(232, 232, 232, 0.8);
+        }
+
+        .close-video {
+            background: none;
+            border: none;
+            color: #e8e8e8;
+            font-size: 2em;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .close-video:hover {
+            background: rgba(232, 232, 232, 0.1);
+        }
+
+        .video-overlay-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .video-overlay-player {
+            width: 90%;
+            max-width: 1400px;
+            aspect-ratio: 16/9;
+            position: relative;
+        }
+
+        .video-overlay-player iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .gallery-header {
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gallery-title {
+            font-size: 1.1em;
+            font-weight: 400;
+            color: rgba(232, 232, 232, 0.8);
+        }
+
+        .close-gallery {
+            background: none;
+            border: none;
+            color: #e8e8e8;
+            font-size: 2em;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .close-gallery:hover {
+            background: rgba(232, 232, 232, 0.1);
+        }
+
+        /* Slideshow content */
+        .gallery-slideshow {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .slide {
+            display: none;
+            max-width: 90%;
+            max-height: 90vh;
+            margin: 0 auto;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .slide-image {
+            max-width: 100%;
+            max-height: 90vh;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        /* When actual images are used */
+        .slide-image img {
+            max-width: 100%;
+            max-height: 90vh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        /* Zoomed state */
+        .slide-image.zoomed {
+            max-height: none;
+            max-width: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 98vw;
+            height: 98vh;
+            z-index: 1001;
+            background: rgba(0, 0, 0, 0.98);
+            border-radius: 0;
+        }
+
+        .slide-image.zoomed img {
+            max-width: 98vw;
+            max-height: 98vh;
+            cursor: zoom-out !important;
+        }
+
+        .slide-image span {
+            color: rgba(232, 232, 232, 0.2);
+            font-size: 0.9em;
+        }
+
+        .slide-caption {
+            margin-top: 20px;
+            text-align: center;
+            color: rgba(232, 232, 232, 0.6);
+            font-size: 0.9em;
+        }
+
+        /* Navigation arrows */
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: #e8e8e8;
+            font-size: 2em;
+            cursor: pointer;
+            padding: 20px 25px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+
+        .gallery-nav:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .gallery-nav.prev {
+            left: 40px;
+        }
+
+        .gallery-nav.next {
+            right: 40px;
+        }
+
+        /* Counter */
+        .gallery-counter {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            color: rgba(232, 232, 232, 0.6);
+            font-size: 0.9em;
+        }
+
+        /* Music Player Overlay */
+        .music-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.97);
+            z-index: 1000;
+            backdrop-filter: blur(30px);
+        }
+
+        .music-overlay.active {
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .music-header {
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .music-title {
+            font-size: 1.1em;
+            font-weight: 400;
+            color: rgba(232, 232, 232, 0.8);
+        }
+
+        .close-music {
+            background: none;
+            border: none;
+            color: #e8e8e8;
+            font-size: 2em;
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .close-music:hover {
+            background: rgba(232, 232, 232, 0.1);
+        }
+
+        .music-content {
+            flex: 1;
+            display: flex;
+            padding: 20px 40px 60px;
+            gap: 60px;
+        }
+
+        /* Static album art section (replaces visualizer) */
+        .album-art-section {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .album-art-display {
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .album-art-display span {
+            font-size: 4em;
+            color: rgba(232, 232, 232, 0.2);
+        }
+
+        /* Controls Section */
+        .controls-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 20px;
+            overflow-y: auto;
+            max-height: 85vh;
+        }
+
+        .song-info {
+            margin-bottom: 20px;
+        }
+
+        .song-info h3 {
+            font-size: 2em;
+            font-weight: 300;
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+        }
+
+        .song-credits {
+            color: rgba(232, 232, 232, 0.6);
+            font-size: 0.95em;
+            line-height: 1.8;
+        }
+
+        .song-credits p {
+            margin-bottom: 6px;
+        }
+
+        /* Audio Controls */
+        .audio-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .play-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(232, 232, 232, 0.1);
+            border: 2px solid rgba(232, 232, 232, 0.3);
+            color: #e8e8e8;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            margin: 0 auto;
+        }
+
+        .play-button:hover {
+            background: rgba(232, 232, 232, 0.2);
+            border-color: rgba(232, 232, 232, 0.5);
+            transform: scale(1.05);
+        }
+
+        .timeline-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .timeline {
+            width: 100%;
+            height: 6px;
+            background: rgba(232, 232, 232, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeline-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            color: rgba(232, 232, 232, 0.5);
+        }
+
+        /* Volume Control */
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .volume-icon {
+            font-size: 0.9em;
+            color: rgba(232, 232, 232, 0.6);
+            min-width: 20px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 6px;
+            background: rgba(232, 232, 232, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #a78bfa;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: #a78bfa;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .volume-value {
+            font-size: 0.85em;
+            color: rgba(232, 232, 232, 0.5);
+            min-width: 30px;
+            text-align: right;
+        }
+
+        /* Album Tracklist View */
+        .album-tracklist {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            overflow-y: auto;
+            max-height: none;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        /* Scrollbar styling */
+        .album-tracklist::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .album-tracklist::-webkit-scrollbar-track {
+            background: rgba(232, 232, 232, 0.05);
+            border-radius: 4px;
+        }
+
+        .album-tracklist::-webkit-scrollbar-thumb {
+            background: rgba(167, 139, 250, 0.4);
+            border-radius: 4px;
+        }
+
+        .album-tracklist::-webkit-scrollbar-thumb:hover {
+            background: rgba(167, 139, 250, 0.6);
+        }
+
+        .track-item {
+            padding: 16px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .track-item:hover {
+            background: rgba(232, 232, 232, 0.05);
+        }
+
+        .track-item.playing {
+            background: rgba(139, 92, 246, 0.15);
+        }
+
+        .track-number {
+            font-size: 0.9em;
+            color: rgba(232, 232, 232, 0.4);
+            min-width: 30px;
+        }
+
+        .track-item.playing .track-number {
+            color: #a78bfa;
+        }
+
+        .track-name {
+            flex: 1;
+            font-size: 1em;
+            color: rgba(232, 232, 232, 0.8);
+        }
+
+        .track-item.playing .track-name {
+            color: #e8e8e8;
+            font-weight: 500;
+        }
+
+        .track-duration {
+            font-size: 0.85em;
+            color: rgba(232, 232, 232, 0.4);
+        }
+
+        .album-credits {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(232, 232, 232, 0.1);
+            color: rgba(232, 232, 232, 0.5);
+            font-size: 0.9em;
+            line-height: 1.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 0 40px;
+            }
+
+            .menu-toggle {
+                top: 40px;
+                right: 40px;
+            }
+
+            .mute-toggle {
+                top: 40px;
+                left: 40px;
+            }
+
+            nav {
+                right: 40px;
+            }
+
+            .work-row {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .work-list {
+                gap: 60px;
+            }
+
+            .music-content {
+                flex-direction: column;
+                gap: 40px;
+            }
+
+            .album-art-display {
+                max-width: 400px;
+            }
+
+            .gallery-counter {
+                top: 30px;
+                right: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 25px;
+            }
+
+            .menu-toggle {
+                top: 30px;
+                right: 25px;
+            }
+
+            .mute-toggle {
+                top: 30px;
+                left: 25px;
+            }
+
+            nav {
+                right: 25px;
+            }
+
+            .section {
+                padding: 80px 0 60px;
+            }
+
+            .section-header {
+                margin-bottom: 50px;
+            }
+
+            .section-header h2 {
+                font-size: 2.5em;
+            }
+
+            .gallery-nav {
+                padding: 15px 20px;
+                font-size: 1.5em;
+            }
+
+            .gallery-nav.prev {
+                left: 20px;
+            }
+
+            .gallery-nav.next {
+                right: 20px;
+            }
+
+            .gallery-counter {
+                top: 20px;
+                right: 20px;
+                font-size: 0.8em;
+            }
+
+            .music-content {
+                padding: 20px 25px 40px;
+            }
+
+            .album-art-display {
+                max-width: 300px;
+            }
+
+            .song-info h3 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Videos for each section -->
+    <video id="video-main" class="bg-video" autoplay muted loop playsinline>
+        <source src="videos/backgrounds/main.mp4" type="video/mp4">
+        <source src="videos/backgrounds/main.webm" type="video/webm">
+    </video>
+
+    <video id="video-films" class="bg-video" autoplay muted loop playsinline>
+        <source src="videos/backgrounds/films-section.mp4" type="video/mp4">
+        <source src="videos/backgrounds/films-section.webm" type="video/webm">
+    </video>
+
+    <video id="video-photos" class="bg-video" autoplay muted loop playsinline>
+        <source src="videos/backgrounds/photos-section.mp4" type="video/mp4">
+        <source src="videos/backgrounds/photos-section.webm" type="video/webm">
+    </video>
+
+    <video id="video-music" class="bg-video" autoplay muted loop playsinline>
+        <source src="videos/backgrounds/music-section.mp4" type="video/mp4">
+        <source src="videos/backgrounds/music-section.webm" type="video/webm">
+    </video>
+
+    <!-- Background Audio for each section -->
+    <audio id="audio-main" class="section-audio" loop>
+        <source src="audio/main-ambient.mp3" type="audio/mpeg">
+        <source src="audio/main-ambient.m4a" type="audio/mp4">
+    </audio>
+
+    <audio id="audio-films" class="section-audio" loop>
+        <source src="audio/films-ambient.mp3" type="audio/mpeg">
+        <source src="audio/films-ambient.m4a" type="audio/mp4">
+    </audio>
+
+    <audio id="audio-photos" class="section-audio" loop>
+        <source src="audio/photos-ambient.mp3" type="audio/mpeg">
+        <source src="audio/photos-ambient.m4a" type="audio/mp4">
+    </audio>
+
+    <audio id="audio-music" class="section-audio" loop>
+        <source src="audio/music-ambient.mp3" type="audio/mpeg">
+        <source src="audio/music-ambient.m4a" type="audio/mp4">
+    </audio>
+
+    <button class="mute-toggle" id="muteToggle" onclick="toggleMute()">Sound On</button>
+    <button class="menu-toggle" onclick="toggleMenu()">Menu</button>
+
+    <nav id="mainNav">
+        <ul>
+            <li><a href="#" class="active" onclick="showSection('main'); return false;">Main</a></li>
+            <li><a href="#" onclick="showSection('films'); return false;">Films</a></li>
+            <li><a href="#" onclick="showSection('photos'); return false;">Photos</a></li>
+            <li><a href="#" onclick="showSection('music'); return false;">Music</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Main Page -->
+        <section id="main" class="section active">
+            <div class="home-content">
+                <h1>Abdulaziz "Zezo" AlAttas</h1>
+                <p class="subtitle">Artist & Sound Engineer</p>
+                <p class="intro">
+                    Welcome to my portfolio. I hope you enjoy my collection of work. I don't like to constrain myself to one medium, so I've dabbled in film, photography, and music. Each piece represents an exploration of different mediums and creative processes.
+                </p>
+            </div>
+        </section>
+
+        <!-- Films Section -->
+        <section id="films" class="section">
+            <div class="section-header">
+                <h2>Films</h2>
+            </div>
+
+            <div class="work-list">
+                <!-- Fazlaka -->
+                <div class="work-row" onclick="openVideoFullscreen('Fazlaka', 'pcgqsCzRRz8')">
+                    <div class="work-media has-video" style="background-image: url('https://img.youtube.com/vi/pcgqsCzRRz8/maxresdefault.jpg'); background-size: cover; background-position: center;">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                            <div style="width: 0; height: 0; border-left: 25px solid white; border-top: 15px solid transparent; border-bottom: 15px solid transparent; margin-left: 8px;"></div>
+                        </div>
+                    </div>
+                    <div class="work-info">
+                        <h3>Fazlaka</h3>
+                        <p class="album-date">2024</p>
+                        <p>Fazlaka (فزلكة) - Excessive philosophizing, exaggerated and complicated speech, or unnecessary cleverness. The term is often used to describe someone trying to appear expert or going into unnecessary detail in a way that may seem pretentious...</p>
+                    </div>
+                </div>
+
+                <!-- Fared -->
+                <div class="work-row" onclick="openVideoFullscreen('Fared', 'azkmFufSp34')">
+                    <div class="work-media has-video" style="background-image: url('https://img.youtube.com/vi/azkmFufSp34/maxresdefault.jpg'); background-size: cover; background-position: center;">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                            <div style="width: 0; height: 0; border-left: 25px solid white; border-top: 15px solid transparent; border-bottom: 15px solid transparent; margin-left: 8px;"></div>
+                        </div>
+                    </div>
+                    <div class="work-info">
+                        <h3>Fared</h3>
+                        <p class="album-date">2022</p>
+                        <p>Nothing about this was planned or premeditated, it was truly a spur of the moment just like how art pieces should be. RIP Fared (December 25th 2022)</p>
+                    </div>
+                </div>
+
+                <!-- Isaac's poems -->
+                <div class="work-row" onclick="openVideoFullscreen('Isaac\'s poems', 'lpd-OcQ9QEY')">
+                    <div class="work-media has-video" style="background-image: url('https://img.youtube.com/vi/lpd-OcQ9QEY/maxresdefault.jpg'); background-size: cover; background-position: center;">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                            <div style="width: 0; height: 0; border-left: 25px solid white; border-top: 15px solid transparent; border-bottom: 15px solid transparent; margin-left: 8px;"></div>
+                        </div>
+                    </div>
+                    <div class="work-info">
+                        <h3>Isaac's poems</h3>
+                        <p class="album-date">2023</p>
+                        <p>Crazy to think that friendships could have such trajectories. Oh, Isaac, you do write with such an authentic voice... I am jealous that I don't get to witness this authenticity anymore.</p>
+                    </div>
+                </div>
+
+                <!-- Lil Garden -->
+                <div class="work-row" onclick="openVideoFullscreen('Lil Garden', 'I4e23DGk5Tc')">
+                    <div class="work-media has-video" style="background-image: url('https://img.youtube.com/vi/I4e23DGk5Tc/maxresdefault.jpg'); background-size: cover; background-position: center;">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                            <div style="width: 0; height: 0; border-left: 25px solid white; border-top: 15px solid transparent; border-bottom: 15px solid transparent; margin-left: 8px;"></div>
+                        </div>
+                    </div>
+                    <div class="work-info">
+                        <h3>Lil Garden</h3>
+                        <p class="album-date">2023</p>
+                        <p>Pretty lil garden. Wish this prompt included sound.<br>40.72474037075909, -73.982539096318</p>
+                    </div>
+                </div>
+
+                <!-- Spacy -->
+                <div class="work-row" onclick="openVideoFullscreen('Spacy', 'TVviJAPbnSE')">
+                    <div class="work-media has-video" style="background-image: url('https://img.youtube.com/vi/TVviJAPbnSE/maxresdefault.jpg'); background-size: cover; background-position: center;">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+                            <div style="width: 0; height: 0; border-left: 25px solid white; border-top: 15px solid transparent; border-bottom: 15px solid transparent; margin-left: 8px;"></div>
+                        </div>
+                    </div>
+                    <div class="work-info">
+                        <h3>Spacy</h3>
+                        <p class="album-date">2021</p>
+                        <p>First film I ever made for film school. This one will always hold a special place in my heart.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Photos Section - Albums -->
+        <section id="photos" class="section">
+            <div class="section-header">
+                <h2>Photography</h2>
+            </div>
+
+            <div class="work-list">
+                <div class="work-row" onclick="openGallery('Floor', 20)">
+                    <div class="work-media album-media" style="background-image: url('photos/floor/cover.jpg'); background-size: cover; background-position: center;">
+                        <div class="album-count">20 photos</div>
+                    </div>
+                    <div class="work-info">
+                        <h3>Floor</h3>
+                        <p class="album-date">2024-2025</p>
+                        <p>Stuff I found on the floor. No rhyme. No reason.</p>
+                    </div>
+                </div>
+
+                <div class="work-row" onclick="openGallery('OTS', 15)">
+                    <div class="work-media album-media" style="background-image: url('photos/ots/cover.jpg'); background-size: cover; background-position: center;">
+                        <div class="album-count">15 photos</div>
+                    </div>
+                    <div class="work-info">
+                        <h3>OTS (Over the Shoulder)</h3>
+                        <p class="album-date">2024-2025</p>
+                        <p>They taught us this technique to use in our films. I thought they looked better in photos.</p>
+                    </div>
+                </div>
+
+                <div class="work-row" onclick="openGallery('Blurry', 18)">
+                    <div class="work-media album-media" style="background-image: url('photos/blurry/cover.jpg'); background-size: cover; background-position: center;">
+                        <div class="album-count">18 photos</div>
+                    </div>
+                    <div class="work-info">
+                        <h3>Blurry</h3>
+                        <p class="album-date">2020-2025</p>
+                        <p>Who would've thought that point and shoot cameras consisted of more steps other than pointing and shooting... Definitely not me.</p>
+                    </div>
+                </div>
+
+                <div class="work-row" onclick="openGallery('COVID', 8)">
+                    <div class="work-media album-media" style="background-image: url('photos/covid/cover.jpg'); background-size: cover; background-position: center;">
+                        <div class="album-count">8 photos</div>
+                    </div>
+                    <div class="work-info">
+                        <h3>COVID</h3>
+                        <p class="album-date">2020</p>
+                        <p>This won the 3rd place award at a student art festival in the UAE. I didn't even know this was submitted to the festival.</p>
+                    </div>
+                </div>
+
+                <div class="work-row" onclick="openGallery('onLINE', 10)">
+                    <div class="work-media album-media" style="background-image: url('photos/online/cover.jpg'); background-size: cover; background-position: center;">
+                        <div class="album-count">10 photos</div>
+                    </div>
+                    <div class="work-info">
+                        <h3>onLINE</h3>
+                        <p class="album-date">2024-2025</p>
+                        <p>Digital footprints of someone who's terminally online.</p>
+                    </div>
+                </div>
+
+                <div class="work-row" onclick="openGallery('Pre-uni', 8)">
+                    <div class="work-media album-media" style="background-image: url('photos/pre-uni/cover.jpg'); background-size: cover; background-position: center;">
+                        <div class="album-count">8 photos</div>
+                    </div>
+                    <div class="work-info">
+                        <h3>Pre-uni</h3>
+                        <p class="album-date">2020-2021</p>
+                        <p>Testing out different mediums. I think one of my rawest works.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Music Section -->
+        <section id="music" class="section">
+            <div class="section-header">
+                <h2>Music</h2>
+            </div>
+
+            <div class="work-list">
+                <!-- M7nk's throwaways Album - FIRST -->
+                <div class="work-row" onclick="openMusicPlayer('album', 'M7nk\'s throwaways', null, 'music/m7nks_throwaways/cover.jpg', {}, [
+                    {name: 'OneXTwo', file: 'music/m7nks_throwaways/01-OneXTwo.mp3', duration: '3:26'},
+                    {name: 'days2', file: 'music/m7nks_throwaways/02-days2.mp3', duration: '0:33'},
+                    {name: 'HEV', file: 'music/m7nks_throwaways/03-HEV.mp3', duration: '2:18'},
+                    {name: 'MIDI5', file: 'music/m7nks_throwaways/04-MIDI5.mp3', duration: '2:48'},
+                    {name: 'Drop Tear (Feat. Beau Bialow)', file: 'music/m7nks_throwaways/05-Drop Tear.mp3', duration: '2:45'},
+                    {name: 'Dean Talk', file: 'music/m7nks_throwaways/06-Dean Talk.mp3', duration: '2:02'}
+                ])">
+                    <div class="work-media track-media" style="background-image: url('music/m7nks_throwaways/cover.jpg'); background-size: cover; background-position: center;">
+                        <div class="album-count">6 tracks</div>
+                    </div>
+                    <div class="work-info">
+                        <h3>M7nk's throwaways</h3>
+                        <p class="album-date">2024-2025</p>
+                    </div>
+                </div>
+
+                <!-- Individual Song 2 - Gannon Green - SECOND -->
+                <div class="work-row" onclick="openMusicPlayer('single', 'Stuck in Your Way', 'music/gannon-stuck-in-your-way.mp3', 'music/gannon-cover.jpg', {artist: 'Gannon Green', guitar: 'Beau Bialow', drums: 'Judah Lopkin', recordingEngineer: 'Abdulaziz &quot;Zezo&quot; AlAttas', producers: 'Abdulaziz &quot;Zezo&quot; AlAttas and Beau Bilow', mixing: 'Abdulaziz &quot;Zezo&quot; AlAttas'})">
+                    <div class="work-media track-media" style="background-image: url('music/gannon-cover.jpg'); background-size: cover; background-position: center;">
+                        <!-- Cover image will show here -->
+                    </div>
+                    <div class="work-info">
+                        <h3>Stuck in Your Way</h3>
+                        <p class="album-date">2025</p>
+                        <p>By Gannon Green</p>
+                    </div>
+                </div>
+
+                <!-- Individual Song 1 - SNIVEL - LAST -->
+                <div class="work-row" onclick="openMusicPlayer('single', 'I fell asleep that saturday night with lights on and windows open', 'music/snivel-i-fell-asleep.mp3', 'music/snivel-cover.jpg', {artistName: 'SNIVEL', singer: 'Karmen Li', lyricist: 'Yuyang Fang', composer: 'Karmen Li', producer: 'Yong Tan, Yuyang Fang', productionCompany: '2T Studio Production', arranger: 'Yong Tan', recordingEngineer: 'Abdulaziz &quot;Zezo&quot; AlAttas', mixingEngineer: 'Yong Tan', masteringEngineer: 'Yong Tan'})">
+                    <div class="work-media track-media" style="background-image: url('music/snivel-cover.jpg'); background-size: cover; background-position: center;">
+                        <!-- Cover image will show here -->
+                    </div>
+                    <div class="work-info">
+                        <h3>I fell asleep that saturday night with lights on and windows open</h3>
+                        <p class="album-date">2025</p>
+                        <p>By SNIVEL</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Gallery Overlay with Slideshow -->
+    <div class="gallery-overlay" id="galleryOverlay">
+        <div class="gallery-header">
+            <h2 class="gallery-title" id="galleryTitle">Album Name</h2>
+            <button class="close-gallery" onclick="closeGallery()">×</button>
+        </div>
+        <div class="gallery-slideshow">
+            <button class="gallery-nav prev" onclick="changeSlide(-1)">‹</button>
+            <div id="slidesContainer">
+                <!-- Slides will be inserted here -->
+            </div>
+            <button class="gallery-nav next" onclick="changeSlide(1)">›</button>
+            <div class="gallery-counter" id="galleryCounter">1 / 1</div>
+        </div>
+    </div>
+
+    <!-- Video Fullscreen Overlay -->
+    <div class="video-overlay" id="videoOverlay">
+        <div class="video-overlay-header">
+            <h2 class="video-overlay-title" id="videoTitle">Video Title</h2>
+            <button class="close-video" onclick="closeVideoFullscreen()">×</button>
+        </div>
+        <div class="video-overlay-content">
+            <div class="video-overlay-player" id="videoPlayer">
+                <!-- Video iframe will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Music Player Overlay -->
+    <div class="music-overlay" id="musicOverlay">
+        <div class="music-header">
+            <h2 class="music-title" id="musicTitle">Track Name</h2>
+            <button class="close-music" onclick="closeMusicPlayer()">×</button>
+        </div>
+        <div class="music-content">
+            <div class="album-art-section">
+                <div class="album-art-display" id="albumArtDisplay">
+                    <span>♪</span>
+                </div>
+            </div>
+            <div class="controls-section" id="controlsSection">
+                <!-- Content will be dynamically inserted -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden audio element for music playback -->
+    <audio id="musicAudio"></audio>
+
+    <script>
+        let currentSlide = 0;
+        let totalSlides = 0;
+        let isMuted = false; // Start unmuted by default
+        let currentAudio = null;
+        let currentVideo = null;
+        let currentSection = 'main';
+
+        // Music player variables (NO audio context - just simple playback)
+        let isPlaying = false;
+        let currentTrackIndex = 0;
+        let currentPlaylist = [];
+        let currentMusicType = 'single';
+        let currentAlbumArt = '';
+
+        // Audio management
+        const audioElements = {
+            'main': document.getElementById('audio-main'),
+            'films': document.getElementById('audio-films'),
+            'photos': document.getElementById('audio-photos'),
+            'music': document.getElementById('audio-music')
+        };
+
+        // Video management
+        const videoElements = {
+            'main': document.getElementById('video-main'),
+            'films': document.getElementById('video-films'),
+            'photos': document.getElementById('video-photos'),
+            'music': document.getElementById('video-music')
+        };
+
+        // Set initial volume for all audio elements
+        Object.values(audioElements).forEach(audio => {
+            if (audio) {
+                audio.volume = 0.3; // Default volume at 30%
+            }
+        });
+
+        // Initialize - show main section video
+        if (videoElements['main']) {
+            videoElements['main'].classList.add('active');
+            currentVideo = videoElements['main'];
+        }
+
+        // Initialize main section with background audio (will actually play after user interaction)
+        currentSection = 'main';
+        playAudioForSection('main');
+
+        // Set all background videos to 88% speed (0.88x)
+        Object.values(videoElements).forEach(video => {
+            if (video) {
+                video.playbackRate = 0.88;
+            }
+        });
+
+        // Initialize music audio element
+        const musicAudio = document.getElementById('musicAudio');
+
+        // Music audio event listeners
+        musicAudio.addEventListener('loadedmetadata', () => {
+            const totalTimeElement = document.getElementById('totalTime');
+            if (totalTimeElement && musicAudio.duration) {
+                totalTimeElement.textContent = formatTime(musicAudio.duration);
+            }
+        });
+
+        musicAudio.addEventListener('timeupdate', () => {
+            const progress = (musicAudio.currentTime / musicAudio.duration) * 100;
+            const progressBar = document.getElementById('timelineProgress');
+            if (progressBar) {
+                progressBar.style.width = progress + '%';
+            }
+            
+            const currentTimeElement = document.getElementById('currentTime');
+            if (currentTimeElement) {
+                currentTimeElement.textContent = formatTime(musicAudio.currentTime);
+            }
+            
+            const totalTimeElement = document.getElementById('totalTime');
+            if (totalTimeElement && musicAudio.duration) {
+                totalTimeElement.textContent = formatTime(musicAudio.duration);
+            }
+        });
+
+        musicAudio.addEventListener('ended', () => {
+            if (currentMusicType === 'album' && currentTrackIndex < currentPlaylist.length - 1) {
+                playTrack(currentTrackIndex + 1);
+            } else {
+                const playButton = document.querySelector('.play-button');
+                if (playButton) {
+                    playButton.textContent = '▶';
+                }
+                isPlaying = false;
+            }
+        });
+
+        function toggleMute() {
+            const button = document.getElementById('muteToggle');
+            isMuted = !isMuted;
+            
+            if (isMuted) {
+                button.textContent = 'Sound Off';
+                button.classList.add('muted');
+                if (currentAudio) {
+                    fadeOut(currentAudio);
+                }
+            } else {
+                button.textContent = 'Sound On';
+                button.classList.remove('muted');
+                playAudioForSection(currentSection);
+            }
+        }
+
+        function playAudioForSection(sectionId) {
+            const newAudio = audioElements[sectionId];
+            
+            // If muted, don't play anything
+            if (isMuted || !newAudio) return;
+
+            // If same audio is already playing, do nothing
+            if (currentAudio === newAudio && !currentAudio.paused) return;
+
+            // Fade out current audio
+            if (currentAudio && currentAudio !== newAudio) {
+                fadeOut(currentAudio);
+            }
+
+            // Fade in new audio
+            currentAudio = newAudio;
+            fadeIn(currentAudio);
+        }
+
+        function playVideoForSection(sectionId) {
+            const newVideo = videoElements[sectionId];
+            
+            if (!newVideo) return;
+
+            // If same video is already active, do nothing
+            if (currentVideo === newVideo) return;
+
+            // Fade out current video
+            if (currentVideo && currentVideo !== newVideo) {
+                currentVideo.classList.remove('active');
+            }
+
+            // Fade in new video
+            currentVideo = newVideo;
+            currentVideo.classList.add('active');
+        }
+
+        function fadeIn(audio) {
+            if (!audio) return;
+            
+            audio.volume = 0;
+            audio.play().catch(e => {
+                console.log('Autoplay prevented. User interaction required.');
+            });
+            
+            let vol = 0;
+            const fadeInterval = setInterval(() => {
+                if (vol < 0.3) {
+                    vol += 0.02;
+                    audio.volume = Math.min(vol, 0.3);
+                } else {
+                    clearInterval(fadeInterval);
+                }
+            }, 50);
+        }
+
+        function fadeOut(audio) {
+            if (!audio) return;
+            
+            let vol = audio.volume;
+            const fadeInterval = setInterval(() => {
+                if (vol > 0) {
+                    vol -= 0.02;
+                    audio.volume = Math.max(vol, 0);
+                } else {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    clearInterval(fadeInterval);
+                }
+            }, 50);
+        }
+
+        function toggleMenu() {
+            const nav = document.getElementById('mainNav');
+            nav.classList.toggle('active');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const nav = document.getElementById('mainNav');
+            const menuToggle = document.querySelector('.menu-toggle');
+            
+            if (!nav.contains(e.target) && !menuToggle.contains(e.target)) {
+                nav.classList.remove('active');
+            }
+        });
+
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+
+            // Update nav active state
+            const navLinks = document.querySelectorAll('nav a');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // Close menu after selection
+            document.getElementById('mainNav').classList.remove('active');
+
+            // Switch background audio and video
+            currentSection = sectionId;
+            playAudioForSection(sectionId);
+            playVideoForSection(sectionId);
+        }
+
+        function openGallery(albumName, photoCount) {
+            const overlay = document.getElementById('galleryOverlay');
+            const title = document.getElementById('galleryTitle');
+            const container = document.getElementById('slidesContainer');
+
+            // Display full album name in gallery
+            const displayNames = {
+                'OTS': 'OTS (Over the Shoulder)',
+                'Floor': 'Floor',
+                'Blurry': 'Blurry',
+                'COVID': 'COVID',
+                'onLINE': 'onLINE',
+                'Pre-uni': 'Pre-uni'
+            };
+            
+            title.textContent = displayNames[albumName] || albumName;
+            totalSlides = photoCount;
+            currentSlide = 0;
+            
+            // Create folder-safe name for album
+            const folderName = albumName.toLowerCase().replace(/\s+/g, '-');
+            
+            // Clear and populate slides
+            container.innerHTML = '';
+            for (let i = 1; i <= photoCount; i++) {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                if (i === 1) slide.classList.add('active');
+                
+                // Create image path: photos/floor/1.jpg, photos/floor/2.jpg, etc.
+                const imagePath = `photos/${folderName}/${i}.jpg`;
+                
+                slide.innerHTML = `
+                    <div class="slide-image" onclick="toggleZoom(this)">
+                        <img src="${imagePath}" alt="${albumName} - Photo ${i}" 
+                             style="width: 100%; height: 100%; object-fit: contain; border-radius: 8px; cursor: zoom-in; transition: transform 0.3s ease;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <span style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; color: rgba(232, 232, 232, 0.2);">Photo ${i}</span>
+                    </div>
+                `;
+                container.appendChild(slide);
+            }
+
+            updateCounter();
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeGallery() {
+            const overlay = document.getElementById('galleryOverlay');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function changeSlide(direction) {
+            const slides = document.querySelectorAll('.slide');
+            slides[currentSlide].classList.remove('active');
+            
+            currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
+            
+            slides[currentSlide].classList.add('active');
+            updateCounter();
+        }
+
+        function updateCounter() {
+            const counter = document.getElementById('galleryCounter');
+            counter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+        }
+
+        function toggleZoom(element) {
+            element.classList.toggle('zoomed');
+            const img = element.querySelector('img');
+            if (img) {
+                if (element.classList.contains('zoomed')) {
+                    img.style.cursor = 'zoom-out';
+                } else {
+                    img.style.cursor = 'zoom-in';
+                }
+            }
+        }
+
+        // Video fullscreen functions
+        function openVideoFullscreen(title, videoId) {
+            // For now, open directly on YouTube since embedding is blocked
+            // Once YouTube settings are fixed, this can embed in overlay
+            window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+            
+            /* Original fullscreen overlay code - uncomment when embedding works:
+            const overlay = document.getElementById('videoOverlay');
+            const titleElement = document.getElementById('videoTitle');
+            const playerElement = document.getElementById('videoPlayer');
+
+            titleElement.textContent = title;
+
+            playerElement.innerHTML = `
+                <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
+            `;
+
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            */
+        }
+
+        function closeVideoFullscreen() {
+            const overlay = document.getElementById('videoOverlay');
+            const playerElement = document.getElementById('videoPlayer');
+
+            // Clear iframe to stop playback
+            playerElement.innerHTML = '';
+
+            // Hide overlay
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Music Player Functions (Simple version - no visualizer)
+        function openMusicPlayer(type, title, audioFile, albumArtUrl, credits, playlist = null) {
+            const overlay = document.getElementById('musicOverlay');
+            const titleElement = document.getElementById('musicTitle');
+            const controlsSection = document.getElementById('controlsSection');
+            const albumArtDisplay = document.getElementById('albumArtDisplay');
+            
+            currentMusicType = type;
+            currentAlbumArt = albumArtUrl;
+            titleElement.textContent = title;
+            
+            // Set album art background
+            if (albumArtUrl) {
+                albumArtDisplay.style.backgroundImage = `url('${albumArtUrl}')`;
+                albumArtDisplay.style.backgroundSize = 'cover';
+                albumArtDisplay.style.backgroundPosition = 'center';
+                albumArtDisplay.innerHTML = ''; // Remove the music note
+            } else {
+                albumArtDisplay.style.backgroundImage = 'none';
+                albumArtDisplay.innerHTML = '<span>♪</span>';
+            }
+            
+            if (type === 'single') {
+                // Single song layout
+                let creditsHTML = '';
+                
+                // SNIVEL song credits
+                if (credits.artistName) creditsHTML += `<p><strong>Artist:</strong> ${credits.artistName}</p>`;
+                if (credits.singer) creditsHTML += `<p><strong>Singer:</strong> ${credits.singer}</p>`;
+                if (credits.lyricist) creditsHTML += `<p><strong>Lyricist:</strong> ${credits.lyricist}</p>`;
+                if (credits.composer) creditsHTML += `<p><strong>Composer:</strong> ${credits.composer}</p>`;
+                if (credits.producer) creditsHTML += `<p><strong>Producer:</strong> ${credits.producer}</p>`;
+                if (credits.productionCompany) creditsHTML += `<p><strong>Production Company:</strong> ${credits.productionCompany}</p>`;
+                if (credits.arranger) creditsHTML += `<p><strong>Arranger:</strong> ${credits.arranger}</p>`;
+                if (credits.recordingEngineer) creditsHTML += `<p><strong>Recording Engineer:</strong> ${credits.recordingEngineer}</p>`;
+                if (credits.mixingEngineer) creditsHTML += `<p><strong>Mixing Engineer:</strong> ${credits.mixingEngineer}</p>`;
+                if (credits.masteringEngineer) creditsHTML += `<p><strong>Mastering Engineer:</strong> ${credits.masteringEngineer}</p>`;
+                
+                // Gannon song credits (different format)
+                if (credits.artist) creditsHTML += `<p><strong>Artist:</strong> ${credits.artist}</p>`;
+                if (credits.guitar) creditsHTML += `<p><strong>Guitar:</strong> ${credits.guitar}</p>`;
+                if (credits.drums) creditsHTML += `<p><strong>Drums:</strong> ${credits.drums}</p>`;
+                if (credits.producers) creditsHTML += `<p><strong>Producers:</strong> ${credits.producers}</p>`;
+                if (credits.mixing) creditsHTML += `<p><strong>Mixing:</strong> ${credits.mixing}</p>`;
+                
+                controlsSection.innerHTML = `
+                    <div class="song-info">
+                        <h3>${title}</h3>
+                        <div class="song-credits">
+                            ${creditsHTML}
+                        </div>
+                    </div>
+                    <div class="audio-controls">
+                        <button class="play-button" onclick="togglePlay()">▶</button>
+                        <div class="timeline-container">
+                            <div class="timeline" onclick="seekTo(event)">
+                                <div class="timeline-progress" id="timelineProgress"></div>
+                            </div>
+                            <div class="time-display">
+                                <span id="currentTime">0:00</span>
+                                <span id="totalTime">0:00</span>
+                            </div>
+                        </div>
+                        <div class="volume-container">
+                            <span class="volume-icon">🔊</span>
+                            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100" onchange="changeMusicVolume(this.value)">
+                            <span class="volume-value" id="volumeValue">100%</span>
+                        </div>
+                    </div>
+                `;
+                
+                musicAudio.src = audioFile;
+                currentPlaylist = [{name: title, file: audioFile}];
+                currentTrackIndex = 0;
+            } else if (type === 'album') {
+                // Album layout with tracklist
+                currentPlaylist = playlist;
+                currentTrackIndex = 0;
+                
+                let tracklistHTML = '';
+                playlist.forEach((track, index) => {
+                    tracklistHTML += `
+                        <div class="track-item ${index === 0 ? 'playing' : ''}" onclick="playTrack(${index})">
+                            <span class="track-number">${index + 1}</span>
+                            <span class="track-name">${track.name}</span>
+                            <span class="track-duration">${track.duration}</span>
+                        </div>
+                    `;
+                });
+                
+                controlsSection.innerHTML = `
+                    <div class="song-info">
+                        <h3>${title}</h3>
+                    </div>
+                    <div class="audio-controls">
+                        <button class="play-button" onclick="togglePlay()">▶</button>
+                        <div class="timeline-container">
+                            <div class="timeline" onclick="seekTo(event)">
+                                <div class="timeline-progress" id="timelineProgress"></div>
+                            </div>
+                            <div class="time-display">
+                                <span id="currentTime">0:00</span>
+                                <span id="totalTime">0:00</span>
+                            </div>
+                        </div>
+                        <div class="volume-container">
+                            <span class="volume-icon">🔊</span>
+                            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100" onchange="changeMusicVolume(this.value)">
+                            <span class="volume-value" id="volumeValue">100%</span>
+                        </div>
+                    </div>
+                    <div class="album-tracklist">
+                        ${tracklistHTML}
+                    </div>
+                    ${credits.credits ? `<div class="album-credits"><p>${credits.credits}</p></div>` : ''}
+                `;
+                
+                musicAudio.src = playlist[0].file;
+            }
+            
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Fade out background ambient audio smoothly when opening music player
+            if (currentAudio && !currentAudio.paused) {
+                fadeOut(currentAudio);
+            }
+        }
+
+        function closeMusicPlayer() {
+            const overlay = document.getElementById('musicOverlay');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Fade in background ambient audio smoothly when closing music player
+            if (currentAudio && isMuted === false) {
+                fadeIn(currentAudio);
+            }
+            
+            if (isPlaying) {
+                musicAudio.pause();
+                isPlaying = false;
+            }
+        }
+
+        function togglePlay() {
+            const playButton = document.querySelector('.play-button');
+            
+            if (isPlaying) {
+                musicAudio.pause();
+                playButton.textContent = '▶';
+                isPlaying = false;
+            } else {
+                musicAudio.play().catch(e => console.log('Play failed:', e));
+                playButton.textContent = '❚❚';
+                isPlaying = true;
+            }
+        }
+
+        function playTrack(index) {
+            if (currentMusicType !== 'album') return;
+            
+            // Update track highlighting
+            const tracks = document.querySelectorAll('.track-item');
+            tracks.forEach((track, i) => {
+                if (i === index) {
+                    track.classList.add('playing');
+                } else {
+                    track.classList.remove('playing');
+                }
+            });
+            
+            currentTrackIndex = index;
+            musicAudio.src = currentPlaylist[index].file;
+            
+            if (isPlaying) {
+                musicAudio.play().catch(e => console.log('Play failed:', e));
+            }
+        }
+
+        function seekTo(event) {
+            const timeline = event.currentTarget;
+            const rect = timeline.getBoundingClientRect();
+            const pos = (event.clientX - rect.left) / rect.width;
+            musicAudio.currentTime = pos * musicAudio.duration;
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function changeMusicVolume(value) {
+            musicAudio.volume = value / 100;
+            const volumeValue = document.getElementById('volumeValue');
+            if (volumeValue) {
+                volumeValue.textContent = `${value}%`;
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const galleryOverlay = document.getElementById('galleryOverlay');
+            const videoOverlay = document.getElementById('videoOverlay');
+            const musicOverlay = document.getElementById('musicOverlay');
+            
+            if (galleryOverlay.classList.contains('active')) {
+                if (e.key === 'Escape') {
+                    closeGallery();
+                } else if (e.key === 'ArrowLeft') {
+                    changeSlide(-1);
+                } else if (e.key === 'ArrowRight') {
+                    changeSlide(1);
+                }
+            }
+            
+            if (videoOverlay.classList.contains('active')) {
+                if (e.key === 'Escape') {
+                    closeVideoFullscreen();
+                }
+            }
+            
+            if (musicOverlay.classList.contains('active')) {
+                if (e.key === 'Escape') {
+                    closeMusicPlayer();
+                } else if (e.key === ' ') {
+                    e.preventDefault();
+                    togglePlay();
+                }
+            }
+        });
+
+        // Handle user interaction to enable audio (for browsers that block autoplay)
+        let audioInitialized = false;
+        document.addEventListener('click', function initAudio() {
+            if (!audioInitialized && !isMuted) {
+                // First interaction - ensure main section audio is set and plays
+                if (!currentAudio) {
+                    currentAudio = audioElements['main'];
+                }
+                if (currentAudio) {
+                    fadeIn(currentAudio);
+                }
+                audioInitialized = true;
+            }
+            document.removeEventListener('click', initAudio);
+        }, { once: true });
+
+        // Hide buttons on scroll, show when at top
+        let lastScrollTop = 0;
+        const menuButton = document.querySelector('.menu-toggle');
+        const muteButton = document.querySelector('.mute-toggle');
+        const navDropdown = document.getElementById('mainNav');
+
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // If at the very top (within 10px threshold)
+            if (scrollTop <= 10) {
+                menuButton.classList.remove('hidden');
+                muteButton.classList.remove('hidden');
+                navDropdown.classList.remove('hidden');
+            } else {
+                menuButton.classList.add('hidden');
+                muteButton.classList.add('hidden');
+                navDropdown.classList.add('hidden');
+                // Also close the menu if it's open
+                navDropdown.classList.remove('active');
+            }
+            
+            lastScrollTop = scrollTop;
+        });
+    </script>
+</body>
+</html>
